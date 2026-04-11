@@ -9,6 +9,7 @@ from core.fft_utils import (
     to_grayscale,
     fft2_shift,
     spectrum_magnitude,
+    normalize_image,
 )
 from core.filters import apply_low_pass, apply_high_pass, apply_notch_filter
 from core.reconstruction import reconstruct_from_top_coefficients
@@ -17,7 +18,7 @@ from core.steganography import encode_text, decode_text, estimate_capacity_bytes
 
 st.set_page_config(
     page_title="Fourier Lab",
-    page_icon="✨",
+    # page_icon="✨",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -60,18 +61,19 @@ def reconstruct_rgb(image_rgb: np.ndarray, keep_ratio: float) -> np.ndarray:
     return np.stack(channels, axis=-1)
 
 
-def image_card(title: str, subtitle: str, accent: str = "primary") -> str:
+def render_metric(title: str, value: str, subtitle: str) -> str:
     return f"""
     <div style="
-        background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(238,242,255,0.85));
-        border: 1px solid rgba(148,163,184,0.20);
-        border-radius: 24px;
+        background: #ffffff;
+        border: 1px solid rgba(148,163,184,0.16);
+        border-radius: 22px;
         padding: 18px 20px;
-        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
-        margin-bottom: 14px;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+        min-height: 122px;
     ">
-        <div style="font-size: 14px; color: #64748b; margin-bottom: 6px;">{subtitle}</div>
-        <div style="font-size: 26px; font-weight: 800; color: #0f172a;">{title}</div>
+        <div style="font-size: 13px; color: #64748b; margin-bottom: 8px; font-weight: 600;">{subtitle}</div>
+        <div style="font-size: 28px; font-weight: 800; color: #0f172a; line-height: 1.15;">{value}</div>
+        <div style="font-size: 14px; color: #334155; margin-top: 6px;">{title}</div>
     </div>
     """
 
@@ -81,50 +83,154 @@ def main() -> None:
         """
         <style>
         .stApp {
-            background:
-                radial-gradient(circle at top left, rgba(99,102,241,0.08), transparent 30%),
-                radial-gradient(circle at top right, rgba(14,165,233,0.08), transparent 28%),
-                linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+            background: #f4f7fb;
         }
+
         .block-container {
-            padding-top: 1.2rem;
+            padding-top: 1.1rem;
             padding-bottom: 2rem;
-            max-width: 1280px;
+            max-width: 1320px;
         }
+
         section[data-testid="stSidebar"] {
-            background: linear-gradient(180deg, #eef2ff 0%, #ffffff 100%);
-            border-right: 1px solid rgba(148,163,184,0.18);
+            background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
+            border-right: 1px solid rgba(255,255,255,0.06);
         }
+
+        section[data-testid="stSidebar"] * {
+            color: #e5e7eb !important;
+        }
+
+        section[data-testid="stSidebar"] label,
+        section[data-testid="stSidebar"] p,
+        section[data-testid="stSidebar"] div {
+            color: #e5e7eb !important;
+        }
+
         .hero {
-            background: linear-gradient(135deg, rgba(99,102,241,0.14), rgba(14,165,233,0.10));
-            border: 1px solid rgba(99,102,241,0.12);
-            border-radius: 28px;
-            padding: 26px 28px;
-            box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
-            margin-bottom: 16px;
+            background: linear-gradient(135deg, #ffffff 0%, #eef2ff 100%);
+            border: 1px solid rgba(148,163,184,0.18);
+            border-radius: 26px;
+            padding: 24px 26px;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+            margin-bottom: 18px;
         }
+
         .hero-title {
-            font-size: 38px;
-            font-weight: 900;
+            font-size: 34px;
+            font-weight: 800;
             color: #0f172a;
             line-height: 1.1;
             margin-bottom: 8px;
         }
+
         .hero-subtitle {
-            font-size: 16px;
+            font-size: 15px;
             color: #475569;
             max-width: 860px;
         }
+
         .section-title {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 800;
             color: #0f172a;
-            margin: 4px 0 10px 0;
+            margin: 6px 0 12px 0;
         }
+
+        .soft-card {
+            background: #ffffff;
+            border: 1px solid rgba(148,163,184,0.16);
+            border-radius: 22px;
+            padding: 18px;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+        }
+
         .hint {
             color: #64748b;
             font-size: 13px;
         }
+
+        .stTabs [data-baseweb="tab-list"] {
+            gap: 10px;
+            background: transparent;
+        }
+
+        .stTabs [data-baseweb="tab"] {
+            border-radius: 999px;
+            padding: 0.6rem 1rem;
+            background: #ffffff;
+            border: 1px solid rgba(148,163,184,0.18);
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
+        }
+
+        .stTabs [aria-selected="true"] {
+            background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%) !important;
+            color: white !important;
+            border: none !important;
+        }
+
+        button[kind="secondary"], button[kind="primary"] {
+            border-radius: 14px !important;
+            padding: 0.6rem 1rem !important;
+        }
+        
+    /* FILE UPLOADER - white clean fix */
+
+div[data-testid="stFileUploader"] {
+    background: transparent !important;
+}
+
+/* unutrašnji beli box */
+div[data-testid="stFileUploader"] section {
+    background: white !important;
+    border-radius: 16px !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+/* GLAVNI TEKST */
+div[data-testid="stFileUploader"] label,
+div[data-testid="stFileUploader"] span,
+div[data-testid="stFileUploader"] p {
+    color: #0f172a !important;  /* TAMNO */
+}
+
+/* sekundarni tekst */
+div[data-testid="stFileUploader"] small {
+    color: #475569 !important;
+}
+
+/* dugme */
+div[data-testid="stFileUploader"] button {
+    background-color: #4f46e5 !important;
+    color: white !important;
+    border-radius: 12px !important;
+    border: none !important;
+}
+
+/* TEXT AREA (steganografija) */
+
+div[data-testid="stTextArea"] textarea {
+    background: white !important;
+    color: #0f172a !important;   /* TAMAN TEKST */
+    border-radius: 14px !important;
+    border: 1px solid #e2e8f0 !important;
+    padding: 10px !important;
+}
+
+/* placeholder tekst */
+div[data-testid="stTextArea"] textarea::placeholder {
+    color: #64748b !important;
+}
+
+/* label iznad */
+div[data-testid="stTextArea"] label {
+    color: #e5e7eb !important;   /* da ostane vidljivo na tamnom sidebaru */
+}
+
+div[data-testid="stTextArea"] textarea:focus {
+    border: 1px solid #4f46e5 !important;
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+}
         </style>
         """,
         unsafe_allow_html=True,
@@ -135,8 +241,8 @@ def main() -> None:
         <div class="hero">
             <div class="hero-title">Fourier Lab</div>
             <div class="hero-subtitle">
-                Interaktivna analiza slika u frekvencijskom domenu: pregled spektra, filtriranje,
-                rekonstrukcija i steganografija — uz moderniji i čistiji interfejs.
+                Interaktivna obrada slika kroz frekvencijski domen: analiza spektra, filtriranje,
+                rekonstrukcija i steganografija.
             </div>
         </div>
         """,
@@ -148,7 +254,12 @@ def main() -> None:
         type=["png", "jpg", "jpeg", "bmp", "webp"],
     )
 
-    st.sidebar.markdown("### Kontrole")
+    st.sidebar.markdown("### Podešavanja")
+
+    mode = st.sidebar.radio(
+        "Način obrade",
+        ["RGB (u boji)", "Grayscale (crno-belo)"],
+    )
 
     low_pass_radius = st.sidebar.slider("Low-pass radius", 5, 250, 40)
     high_pass_radius = st.sidebar.slider("High-pass radius", 5, 250, 40)
@@ -170,17 +281,18 @@ def main() -> None:
     spectrum = fft2_shift(gray_for_fft)
     spectrum_img = spectrum_magnitude(spectrum)
 
+    use_color = mode == "RGB (u boji)"
     h, w = original.shape[:2]
 
     col_a, col_b, col_c, col_d = st.columns(4)
     with col_a:
-        st.markdown(image_card("RGB", "kanali"), unsafe_allow_html=True)
+        st.markdown(render_metric("Slika je spremna", "RGB / BW", "Mode"), unsafe_allow_html=True)
     with col_b:
-        st.markdown(image_card(f"{w} × {h}", "dimenzije"), unsafe_allow_html=True)
+        st.markdown(render_metric(f"{w} × {h}", "Dimenzije", "Ulaz"), unsafe_allow_html=True)
     with col_c:
-        st.markdown(image_card("FFT", "analiza"), unsafe_allow_html=True)
+        st.markdown(render_metric("Frekvencijska analiza", "FFT", "Core"), unsafe_allow_html=True)
     with col_d:
-        st.markdown(image_card("Live", "interakcija"), unsafe_allow_html=True)
+        st.markdown(render_metric("Interaktivni alat", "Live", "UI"), unsafe_allow_html=True)
 
     tab1, tab2, tab3 = st.tabs(["Analiza", "Filteri i rekonstrukcija", "Steganografija"])
 
@@ -189,24 +301,28 @@ def main() -> None:
 
         left, right = st.columns(2)
         with left:
-            st.subheader("Originalna slika u boji")
+            st.subheader("Originalna slika")
             st.image(original, use_column_width=True)
 
         with right:
-            st.subheader("FFT spektar (iz grayscale osnove)")
+            st.subheader("FFT spektar")
             st.image(spectrum_img, use_column_width=True)
 
         st.markdown(
-            '<div class="hint">Spektar je računat nad grayscale verzijom slike, jer je to '
-            'najčišći način za vizuelizaciju frekvencija. Original ostaje u boji.</div>',
+            '<div class="hint">FFT spektar se računa nad grayscale verzijom slike radi standardne i pregledne '
+            'vizuelizacije frekvencija, dok original ostaje u boji.</div>',
             unsafe_allow_html=True,
         )
 
     with tab2:
         st.markdown('<div class="section-title">Filtriranje u frekvencijskom domenu</div>', unsafe_allow_html=True)
 
-        low_rgb = apply_rgb_filter(original, apply_low_pass, low_pass_radius)
-        high_rgb = apply_rgb_filter(original, apply_high_pass, high_pass_radius)
+        if use_color:
+            low_img = apply_rgb_filter(original, apply_low_pass, low_pass_radius)
+            high_img = apply_rgb_filter(original, apply_high_pass, high_pass_radius)
+        else:
+            low_img = apply_low_pass(gray_for_fft, low_pass_radius)
+            high_img = apply_high_pass(gray_for_fft, high_pass_radius)
 
         c1, c2, c3 = st.columns(3)
         with c1:
@@ -215,22 +331,34 @@ def main() -> None:
 
         with c2:
             st.write(f"Low-pass (radius = {low_pass_radius})")
-            st.image(clip_rgb(low_rgb), use_column_width=True)
+            if use_color:
+                st.image(clip_rgb(low_img), use_column_width=True)
+            else:
+                st.image(normalize_image(low_img), use_column_width=True)
 
         with c3:
             st.write(f"High-pass (radius = {high_pass_radius})")
-            st.image(normalize_rgb(high_rgb), use_column_width=True)
+            if use_color:
+                st.image(normalize_rgb(high_img), use_column_width=True)
+            else:
+                st.image(normalize_image(high_img), use_column_width=True)
 
         st.divider()
 
         st.markdown('<div class="section-title">Rekonstrukcija iz najjačih frekvencija</div>', unsafe_allow_html=True)
 
-        recon_rgb = reconstruct_rgb(original, keep_ratio)
+        if use_color:
+            recon_img = reconstruct_rgb(original, keep_ratio)
+        else:
+            recon_img = reconstruct_from_top_coefficients(gray_for_fft, keep_ratio)
 
         c4, c5 = st.columns(2)
         with c4:
             st.write(f"Koristi se {int(keep_ratio * 100)}% frekvencija")
-            st.image(clip_rgb(recon_rgb), use_column_width=True)
+            if use_color:
+                st.image(clip_rgb(recon_img), use_column_width=True)
+            else:
+                st.image(normalize_image(recon_img), use_column_width=True)
 
         with c5:
             st.write("Original")
@@ -241,7 +369,7 @@ def main() -> None:
         st.divider()
 
         st.markdown('<div class="section-title">Notch filter demo</div>', unsafe_allow_html=True)
-        st.caption("Ovo je primer uklanjanja odabranih frekvencija. Kasnije možemo dodati klik po spektru.")
+        st.caption("Primer uklanjanja odabranih frekvencija. Kasnije možemo dodati klik po spektru.")
 
         if st.checkbox("Pokaži primer notch filtera na fiksnim tačkama", value=False):
             h2, w2 = gray_for_fft.shape
@@ -257,7 +385,7 @@ def main() -> None:
 
         max_outer = max(20, min(350, min(h, w) // 2 - 2))
         safe_outer = min(outer_radius, max_outer)
-        safe_inner = min(inner_radius, safe_outer - 1)
+        safe_inner = min(inner_radius, max(5, safe_outer - 1))
 
         capacity_bytes = estimate_capacity_bytes(
             gray_for_fft.shape,
