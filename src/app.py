@@ -174,63 +174,64 @@ def main() -> None:
             padding: 0.6rem 1rem !important;
         }
         
-    /* FILE UPLOADER - white clean fix */
+        /* FILE UPLOADER - white clean fix */
 
-div[data-testid="stFileUploader"] {
-    background: transparent !important;
-}
+        div[data-testid="stFileUploader"] {
+            background: transparent !important;
+        }
 
-/* unutrašnji beli box */
-div[data-testid="stFileUploader"] section {
-    background: white !important;
-    border-radius: 16px !important;
-    border: 1px solid #e2e8f0 !important;
-}
+        /* unutrašnji beli box */
+        div[data-testid="stFileUploader"] section {
+            background: white !important;
+            border-radius: 16px !important;
+            border: 1px solid #e2e8f0 !important;
+        }
 
-/* GLAVNI TEKST */
-div[data-testid="stFileUploader"] label,
-div[data-testid="stFileUploader"] span,
-div[data-testid="stFileUploader"] p {
-    color: #0f172a !important;  /* TAMNO */
-}
+        /* GLAVNI TEKST */
+        div[data-testid="stFileUploader"] label,
+        div[data-testid="stFileUploader"] span,
+        div[data-testid="stFileUploader"] p {
+                 color: #0f172a !important;  /* TAMNO */
+        }
 
-/* sekundarni tekst */
-div[data-testid="stFileUploader"] small {
-    color: #475569 !important;
-}
+        /* sekundarni tekst */
+        div[data-testid="stFileUploader"] small {
+            color: #475569 !important;
+        }
 
-/* dugme */
-div[data-testid="stFileUploader"] button {
-    background-color: #4f46e5 !important;
-    color: white !important;
-    border-radius: 12px !important;
-    border: none !important;
-}
+        /* dugme */
+        div[data-testid="stFileUploader"] button {
+            background-color: #4f46e5 !important;
+            color: white !important;
+            border-radius: 12px !important;
+            border: none !important;
+        }
 
-/* TEXT AREA (steganografija) */
+        /* TEXT AREA (steganografija) */
+        
+        div[data-testid="stTextArea"] textarea {
+            background: white !important;
+            color: #0f172a !important;   /* TAMAN TEKST */
+            border-radius: 14px !important;
+            border: 1px solid #e2e8f0 !important;
+            padding: 10px !important;
+        }
+        
+        /* placeholder tekst */
+        div[data-testid="stTextArea"] textarea::placeholder {
+            color: #64748b !important;
+        }
 
-div[data-testid="stTextArea"] textarea {
-    background: white !important;
-    color: #0f172a !important;   /* TAMAN TEKST */
-    border-radius: 14px !important;
-    border: 1px solid #e2e8f0 !important;
-    padding: 10px !important;
-}
-
-/* placeholder tekst */
-div[data-testid="stTextArea"] textarea::placeholder {
-    color: #64748b !important;
-}
-
-/* label iznad */
-div[data-testid="stTextArea"] label {
-    color: #e5e7eb !important;   /* da ostane vidljivo na tamnom sidebaru */
-}
-
-div[data-testid="stTextArea"] textarea:focus {
-    border: 1px solid #4f46e5 !important;
-    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
-}
+        /* label iznad */
+        div[data-testid="stTextArea"] label {
+            color: #e5e7eb !important;   /* da ostane vidljivo na tamnom sidebaru */
+        }
+        
+        div[data-testid="stTextArea"] textarea:focus {
+            border: 1px solid #4f46e5 !important;
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+        }
+        
         </style>
         """,
         unsafe_allow_html=True,
