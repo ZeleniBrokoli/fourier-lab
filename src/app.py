@@ -23,6 +23,9 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+if "stego_image" not in st.session_state:
+    st.session_state["stego_image"] = None
+
 
 def clip_rgb(image: np.ndarray) -> np.ndarray:
     img = np.real(image).astype(np.float32)
@@ -267,7 +270,7 @@ def main() -> None:
     keep_ratio = st.sidebar.slider("Rekonstrukcija — procenat frekvencija", 1, 100, 10) / 100.0
 
     st.sidebar.markdown("### Steganografija")
-    stego_message = st.sidebar.text_area("Skrivena poruka", value="Pozdrav iz Fourier Lab-a!")
+    stego_message = st.sidebar.text_area("Skrivena poruka", value="Ubacimo skrivenu poruku.")
     inner_radius = st.sidebar.slider("Stego inner radius", 5, 120, 15)
     outer_radius = st.sidebar.slider("Stego outer radius", 20, 350, 200)
 
@@ -395,10 +398,25 @@ def main() -> None:
         )
         st.write(f"Približan kapacitet: **{capacity_bytes} bajtova**")
 
-        c6, c7 = st.columns(2)
+        col1, col2 = st.columns(2)
 
-        with c6:
-            if st.button("Embed poruku"):
+        with col1:
+            st.subheader("Original (grayscale)")
+            st.image(normalize_image(gray_for_fft), use_column_width=True)
+
+        with col2:
+            st.subheader("Stego slika")
+            if st.session_state["stego_image"] is not None:
+                st.image(st.session_state["stego_image"], use_column_width=True)
+            else:
+                st.info("Još nije napravljena stego slika.")
+
+        st.divider()
+
+        c1, c2 = st.columns(2)
+
+        with c1:
+            if st.button("Embed poruku", key="embed_button"):
                 try:
                     stego = encode_text(
                         gray_for_fft,
@@ -408,16 +426,14 @@ def main() -> None:
                     )
                     st.session_state["stego_image"] = stego
                     st.success("Poruka je ubačena u sliku.")
-                    st.image(stego, use_column_width=True)
                 except Exception as exc:
                     st.error(f"Greška pri embedovanju: {exc}")
 
-        with c7:
-            if st.button("Extract poruku"):
+        with c2:
+            if st.button("Extract poruku", key="extract_button"):
                 try:
-                    if "stego_image" in st.session_state:
-                        source = st.session_state["stego_image"]
-                    else:
+                    source = st.session_state["stego_image"]
+                    if source is None:
                         source = gray_for_fft.astype("uint8")
 
                     decoded = decode_text(
@@ -430,11 +446,16 @@ def main() -> None:
                 except Exception as exc:
                     st.error(f"Greška pri ekstrakciji: {exc}")
 
-        if "stego_image" in st.session_state:
+        if st.session_state["stego_image"] is not None:
             st.divider()
-            st.subheader("Stego slika")
-            st.image(st.session_state["stego_image"], use_column_width=True)
-
+            st.subheader("Poređenje")
+            left, right = st.columns(2)
+            with left:
+                st.write("Original")
+                st.image(normalize_image(gray_for_fft), use_column_width=True)
+            with right:
+                st.write("Stego")
+                st.image(st.session_state["stego_image"], use_column_width=True)
 
 if __name__ == "__main__":
     main()
