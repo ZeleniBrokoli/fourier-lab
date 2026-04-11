@@ -1,0 +1,10 @@
+- paketi koje treba instalirati
+pip install streamlit numpy pillow
+
+- requirements.txt
+pip install -r requirements.txt
+
+
+- ovako se poziva
+cd src
+streamlit run app.py
