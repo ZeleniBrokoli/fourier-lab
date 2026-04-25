@@ -67,6 +67,15 @@ def reconstruct_rgb(image_rgb: np.ndarray, keep_ratio: float) -> np.ndarray:
         channels.append(recon)
     return np.stack(channels, axis=-1)
 
+def mse(a, b):
+    return np.mean((a - b) ** 2)
+
+def psnr(a, b):
+    mse_val = mse(a, b)
+    if mse_val == 0:
+        return 100
+    return 20 * np.log10(255 / np.sqrt(mse_val))
+
 def download_image(image: np.ndarray, filename: str):
     buf = io.BytesIO()
     Image.fromarray(image).save(buf, format="PNG")
