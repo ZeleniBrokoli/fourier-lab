@@ -2,6 +2,10 @@ from __future__ import annotations
 
 import numpy as np
 import streamlit as st
+import io
+import time
+import matplotlib.pyplot as plt
+from PIL import Image
 
 from core.fft_utils import (
     load_image,
@@ -62,6 +66,16 @@ def reconstruct_rgb(image_rgb: np.ndarray, keep_ratio: float) -> np.ndarray:
         recon = reconstruct_from_top_coefficients(ch, keep_ratio)
         channels.append(recon)
     return np.stack(channels, axis=-1)
+
+def download_image(image: np.ndarray, filename: str):
+    buf = io.BytesIO()
+    Image.fromarray(image).save(buf, format="PNG")
+    st.download_button(
+        label="Download image",
+        data=buf.getvalue(),
+        file_name=filename,
+        mime="image/png"
+    )
 
 
 def render_metric(title: str, value: str, subtitle: str) -> str:
@@ -318,6 +332,18 @@ def main() -> None:
             unsafe_allow_html=True,
         )
 
+        st.divider()
+        st.markdown("### RGB kanali")
+
+        r, g, b = original[..., 0], original[..., 1], original[..., 2]
+
+        c1, c2, c3 = st.columns(3)
+        c1.image(r, caption="Red", use_column_width=True)
+        c2.image(g, caption="Green", use_column_width=True)
+        c3.image(b, caption="Blue", use_column_width=True)
+
+        st.info("Niske frekvencije = struktura, visoke frekvencije = ivice i detalji.")
+
     with tab2:
         st.markdown('<div class="section-title">Filtriranje u frekvencijskom domenu</div>', unsafe_allow_html=True)
 
@@ -347,6 +373,16 @@ def main() -> None:
             else:
                 st.image(normalize_image(high_img), use_column_width=True)
 
+        download_image(
+            clip_rgb(low_img) if use_color else normalize_image(low_img),
+            "low_pass.png"
+        )
+
+        download_image(
+            normalize_rgb(high_img) if use_color else normalize_image(high_img),
+            "high_pass.png"
+        )
+
         st.divider()
 
         st.markdown('<div class="section-title">Rekonstrukcija iz najjačih frekvencija</div>', unsafe_allow_html=True)
@@ -370,10 +406,31 @@ def main() -> None:
 
         st.caption("Što je manji keep ratio, slika je mutnija. Kako raste procenat, vraćaju se detalji.")
 
+        download_image(
+            clip_rgb(recon_img) if use_color else normalize_image(recon_img),
+            "reconstruction.png"
+        )
+
+        st.markdown("### Animacija rekonstrukcije")
+
+        if st.button("Pokreni animaciju"):
+            placeholder = st.empty()
+
+            for i in range(5, 100, 5):
+                if use_color:
+                    img = reconstruct_rgb(original, i / 100)
+                    display = clip_rgb(img)
+                else:
+                    img = reconstruct_from_top_coefficients(gray_for_fft, i / 100)
+                    display = normalize_image(img)
+
+                placeholder.image(display, use_column_width=True)
+                time.sleep(0.1)
+
         st.divider()
 
         st.markdown('<div class="section-title">Notch filter demo</div>', unsafe_allow_html=True)
-        st.caption("Primer uklanjanja odabranih frekvencija. Kasnije možemo dodati klik po spektru.")
+        st.caption("Primer uklanjanja određenih frekvencija.")
 
         if st.checkbox("Pokaži primer notch filtera na fiksnim tačkama", value=False):
             h2, w2 = gray_for_fft.shape
@@ -382,7 +439,14 @@ def main() -> None:
                 (h2 // 2 - 30, w2 // 2 - 30),
             ]
             notch_gray = apply_notch_filter(gray_for_fft, demo_centers, notch_radius=10)
-            st.image(notch_gray, use_column_width=True)
+            st.image(normalize_image(notch_gray), use_column_width=True)
+
+        st.divider()
+        st.markdown("### Histogram")
+
+        fig, ax = plt.subplots()
+        ax.hist(gray_for_fft.flatten(), bins=50)
+        st.pyplot(fig)
 
     with tab3:
         st.markdown('<div class="section-title">Skrivena poruka u frekvencijskom domenu</div>', unsafe_allow_html=True)
