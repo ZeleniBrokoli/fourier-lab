@@ -415,6 +415,19 @@ def main() -> None:
 
         st.caption("Što je manji keep ratio, slika je mutnija. Kako raste procenat, vraćaju se detalji.")
 
+        st.markdown("### Kvalitet rekonstrukcije")
+
+        if not use_color:
+            st.write("MSE:", round(mse(gray_for_fft, recon_img), 2))
+            st.write("PSNR:", round(psnr(gray_for_fft, recon_img), 2), "dB")
+        else:
+            # za RGB uzmi grayscale verziju za poređenje
+            recon_gray = to_grayscale(recon_img)
+            st.write("MSE:", round(mse(gray_for_fft, recon_gray), 2))
+            st.write("PSNR:", round(psnr(gray_for_fft, recon_gray), 2), "dB")
+
+        st.info("Manji MSE i veći PSNR znače bolju rekonstrukciju slike.")
+
         download_image(
             clip_rgb(recon_img) if use_color else normalize_image(recon_img),
             "reconstruction.png"
