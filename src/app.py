@@ -22,7 +22,6 @@ from core.steganography import encode_text, decode_text, estimate_capacity_bytes
 
 st.set_page_config(
     page_title="Fourier Lab",
-    # page_icon="✨",
     layout="wide",
     initial_sidebar_state="expanded",
 )
