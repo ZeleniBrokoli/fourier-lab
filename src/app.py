@@ -446,7 +446,7 @@ def main() -> None:
                     display = normalize_image(img)
 
                 placeholder.image(display, use_column_width=True)
-                time.sleep(0.1)
+                time.sleep(0.2)
 
         st.divider()
 
@@ -463,11 +463,12 @@ def main() -> None:
             st.image(normalize_image(notch_gray), use_column_width=True)
 
         st.divider()
-        st.markdown("### Histogram")
+        st.markdown('<div class="section-title">Histogram</div>', unsafe_allow_html=True)
 
-        fig, ax = plt.subplots()
-        ax.hist(gray_for_fft.flatten(), bins=50)
-        st.pyplot(fig)
+        with st.expander("Vidi histogram"):
+            fig, ax = plt.subplots()
+            ax.hist(gray_for_fft.flatten(), bins=50)
+            st.pyplot(fig)
 
     with tab3:
         st.markdown('<div class="section-title">Skrivena poruka u frekvencijskom domenu</div>', unsafe_allow_html=True)
