@@ -4,22 +4,22 @@
 
 ---
 
-## 📌 Opis projekta
+## Opis projekta
 
-Fourier Lab je interaktivna aplikacija za obradu slika koja koristi Furijeovu transformaciju za analizu i manipulaciju slika u frekvencijskom domenu.
+Fourier Lab je interaktivni sistem za obradu slika koja koristi Furijeovu transformaciju za analizu i manipulaciju slika u frekvencijskom domenu.
 
 Cilj projekta je da pokaže kako se slike mogu:
 
 * analizirati kroz frekvencije
 * rekonstruisati iz frekvencijskih komponenti
-* filtrirati (uklanjanje šuma, oštrenje)
+* filtrirati (niskopropusni i visokopropusni filter)
 * koristiti za skrivanje informacija (steganografija)
 
 Aplikacija omogućava rad u realnom vremenu kroz grafički interfejs.
 
 ---
 
-## 🚀 Funkcionalnosti
+## Funkcionalnosti
 
 ### 1. Frekvencijska analiza
 
@@ -43,7 +43,6 @@ Aplikacija omogućava rad u realnom vremenu kroz grafički interfejs.
 
 * Ugradnja skrivene poruke u sliku
 * Ekstrakcija skrivene poruke
-* Kontrola intenziteta skrivenih podataka
 
 ### 5. Eksperimenti
 
@@ -52,32 +51,32 @@ Aplikacija omogućava rad u realnom vremenu kroz grafički interfejs.
 
 ---
 
-## 🛠️ Tehnologije
-
-* Python
-* NumPy
-* OpenCV
-* Streamlit
-* Matplotlib (opciono)
-
----
-
-## 📂 Struktura projekta
+## Struktura projekta
 
 ```
-fourier_lab/
+fourier-lab/
 │
-├── app.py                # Glavna aplikacija (Streamlit)
-├── fft_utils.py         # Funkcije za FFT
-├── filters.py           # Filtri u frekvencijskom domenu
-├── reconstruction.py    # Rekonstrukcija slike
-├── steganography.py     # Skriveni podaci u slici
-└── utils.py             # Pomoćne funkcije
+├── app.py                 # Glavni Streamlit fajl (ulazna tačka aplikacije)
+│
+├── core/                 # Logika i obrada 
+│   ├── __init__.py
+│   ├── fft_utils.py       # FFT, IFFT, normalizacija, grayscale itd.
+│   ├── filters.py         # Low-pass, high-pass, notch filter
+│   ├── reconstruction.py  # Rekonstrukcija slike iz spektra
+│   └── steganography.py   # Steganografija (eksperimentalni deo)
+│
+├── ui/                   # UI komponente (prikaz)
+│   ├── __init__.py
+│   └── components.py      # Funkcije za prikaz slika i layout
+│
+├── requirements.txt       
+├── run.txt                
+└── README.md              # Opis projekta
 ```
 
 ---
 
-## ⚙️ Instalacija
+## Instalacija
 
 1. Kloniraj repozitorijum:
 
@@ -94,7 +93,7 @@ pip install numpy opencv-python streamlit matplotlib
 
 ---
 
-## ▶️ Pokretanje aplikacije
+## Pokretanje aplikacije
 
 Pokreni aplikaciju pomoću Streamlit-a:
 
@@ -106,7 +105,7 @@ Aplikacija će se otvoriti u browseru.
 
 ---
 
-## 🧠 Teorijska osnova
+## Teorijska osnova
 
 Projekat se zasniva na Furijeovoj transformaciji koja omogućava predstavljanje slike kao sume frekvencijskih komponenti.
 
@@ -117,7 +116,7 @@ Manipulacijom ovih komponenti moguće je menjati izgled slike.
 
 ---
 
-## 🎯 Cilj projekta
+## Cilj projekta
 
 * Razumevanje Furijeove transformacije kroz vizuelizaciju
 * Primena u realnim problemima obrade slika
@@ -125,21 +124,7 @@ Manipulacijom ovih komponenti moguće je menjati izgled slike.
 
 ---
 
-## 📈 Moguća proširenja
+## Autor
 
-* Obrada video signala
-* 3D vizualizacija spektra
-* Poređenje sa DCT (JPEG kompresija)
-* Rad u realnom vremenu sa kamerom
+Natalija Ranđelović
 
----
-
-## 👨‍💻 Autor
-
-[Dodaj svoje ime]
-
----
-
-## 📜 Licenca
-
-Ovaj projekat je razvijen u edukativne svrhe.
